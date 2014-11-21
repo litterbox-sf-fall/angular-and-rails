@@ -1,7 +1,12 @@
 var app = angular.module("raffler", [
 	'raffler.controllers',
+  'raffler.directives',
 	'raffler.resources'
 	]);
+
+app.config(function (RailsResourceProvider) {
+    RailsResourceProvider.rootWrapping(false).updateMethod('patch');
+  });
 
 var resourceModule = angular.module('raffler.resources', ["rails"]);
 
@@ -24,6 +29,12 @@ appControllers.controller('RaffleController', [
     Player.query().then(function(result) {
     	$scope.players = result;
   	})
+
+    
+    $scope.saveRating = function (rating, player){
+      player.rating = rating;
+      player.update();
+    }
  	
  		$scope.addPlayer = function() {
 			var newPlayer = new Player({

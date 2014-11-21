@@ -1,5 +1,5 @@
 html, body {
-  background-color: #D35400;
+  background-color: #ecf0f1;
   font-family: Verdana, Helvetica, Arial;
   font-size: 14px;
 }
@@ -88,3 +88,28 @@ li {
     }
   }
 }
+
+
+.rating{
+  color: #a9a9a9;
+  margin: 0;
+  padding: 0;
+}
+
+ul.rating {
+  display: inline-block;
+}
+
+.rating li {
+  list-style-type: none;
+  display: inline-block;
+  padding: 1px;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.rating .filled {
+  color: #FFD700;
+}
+

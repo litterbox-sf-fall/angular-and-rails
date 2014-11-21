@@ -12,7 +12,11 @@
   <ul>
     <li ng-repeat="player in players">
       {{player.name}}
-       <span ng-show="player.winner" ng-class="{highlight: player == lastWinner}" class="winner">WINNER</span>
+      <!-- star-rating has scoped attributes: ratingValue, max and onRatingSelected -->
+      <!-- saveRating() is a controller scoped event handler, it's not part of the directive, but called from it -->
+      <!-- newRating is a variable set in the directive -->
+      <star-rating rating-value="player.rating" max="10" on-rating-selected="saveRating(newRating, player)"></star-rating>
+      <span ng-show="player.winner" ng-class="{highlight: player == lastWinner}" class="winner">WINNER</span>
     </li>
   </ul>
 
