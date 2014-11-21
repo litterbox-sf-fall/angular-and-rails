@@ -15,8 +15,8 @@ ActiveRecord::Schema.define(version: 20141116182441) do
 
   create_table "players", force: true do |t|
     t.string   "name"
-    t.boolean  "winner"
-    t.integer  "rating"
+    t.boolean  "winner",     default: false
+    t.integer  "rating",     default: 5
     t.datetime "created_at"
     t.datetime "updated_at"
   end
