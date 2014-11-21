@@ -1,38 +1,61 @@
 
-1) clone repo, install, rake seed and inspect
+##AngularJS and Rails
+
+####Goals:
 
 
-- model
-	- rails c Player.all
-
-- controller
-- view 
-- one route
-
-Goal: Move entrile app to cleint, demote rails to serve as json api
+Building a raffler application: Randomly pick winners from a list of players. Turn rails server into a pure api and move the app functionality into the client.
 
 
-2)
+####1) Getting started:
 
-Turning server into an api, moving the app to the client.
+Clone this repo and explore application.
 
-- include angular js
+	bundle
+	rake db:create
+	rake db:migrate
+	rake db:seed
+	rails s
 
-```
- <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.2/angular.min.js"></script>
+[open app in browser](http://localhost:3000)
 
-```
-
-- add ng-app
-- Test with a random expression expression, like
-	- {{ 12.34 | currency }}	
-
-3) Creating the API
-
-Make restful controller for Players
-- respond_to :json 
-- index update show edit destroy 
+What does the app do? What are the models, controllers, views?
 	
+#####A word about turbolinks: [Remove](http://blog.steveklabnik.com/posts/2013-06-25-removing-turbolinks-from-rails-4)!
+
+[What are turbolinks?](http://guides.rubyonrails.org/working_with_javascript_in_rails.html#turbolinks) / [Why remove them?](http://engineering.onlive.com/2014/02/14/turbolinks-the-best-thing-you-wont-ever-use-in-rails-4/)
+	
+
+####1) Angularize
+
+
+a) Add AngularJS gem to Gemfile:
+
+	gem 'angular-gem'
+	
+We will be using a gem `angularjs-rails-resource` that is specifically designed to work with Rails resources. Add it to Gemfile
+
+	gem 'angularjs-rails-resource', '~> 1.1.1'
+
+b) Turn app into an angular app
+
+	<html ng-app>
+
+c) Quick test	
+
+Embedd a random angular expression in a view and verify it works, for example:
+
+	{{ 12.34 | currency }}	
+
+####2) Turn Rails into api server
+
+Generate RESTful players controller
+
+	rails g controller players index show create update destroy
+	
+
+The new controller responds with **json** exclusively.	
+
 ```
 class PlayersController < ApplicationController
   # controller supports json only, it can't render pages
@@ -64,26 +87,26 @@ class PlayersController < ApplicationController
 end
 ```	
 
-add route for resource
+Add playes resource routes:
 
 	resources :players
 
-
-test it!
+Test it!
 
 	http://localhost:3000/players.json
 
+####3) Replace server side ERB with client side Angular
 
-4) Replacing server sider rendered erb with client side angular
+a) We go back to plain HTMl:
 
-In raffler.js, create app module
+* Remove `.erb` from `views/players/index.html.erb`
+
+
+b) In raffler.js, create angular app module
 
 	var app = angular.module("Raffler", []);
 	
-change `ng-app` tag
-
-
-use gem 'angularjs-rails-resource', '~> 1.1.1'
+c) Add application name to `ng-app` tag
 
 
 
