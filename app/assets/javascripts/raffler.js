@@ -6,7 +6,7 @@ var app = angular.module("raffler", [
 var resourceModule = angular.module('raffler.resources', ["rails"]);
 
 resourceModule.factory('Player',
-  function (railsResourceFactory, $q) {
+  function (railsResourceFactory) {
     var resource = railsResourceFactory({
       url: '/players',
       name: 'player'});
@@ -17,9 +17,8 @@ var appControllers = angular.module('raffler.controllers', []);
 
 appControllers.controller('RaffleController', [ 
 	"$scope",
-	"$q",
 	"Player",
-	function($scope, $q, Player) {
+	function($scope, Player) {
 
     Player.query().then(function(result) {
     	$scope.players = result;

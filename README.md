@@ -1,38 +1,66 @@
 
-1) clone repo, install, rake seed and inspect
+##AngularJS and Rails
+
+####Goals:
 
 
-- model
-	- rails c Player.all
-
-- controller
-- view 
-- one route
-
-Goal: Move entrile app to cleint, demote rails to serve as json api
+Building a raffler application: Randomly pick winners from a list of players. Turn rails server into a pure api and move the app functionality into the client.
 
 
-2)
+####1) Getting started:
 
-Turning server into an api, moving the app to the client.
+Clone this repo and explore application.
 
-- include angular js
+	bundle
+	rake db:create
+	rake db:migrate
+	rake db:seed
+	rails s
 
-```
- <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.2/angular.min.js"></script>
+[open app in browser](http://localhost:3000)
 
-```
-
-- add ng-app
-- Test with a random expression expression, like
-	- {{ 12.34 | currency }}	
-
-3) Creating the API
-
-Make restful controller for Players
-- respond_to :json 
-- index update show edit destroy 
+What does the app do? What are the models, controllers, views?
 	
+#####A word about turbolinks: [Remove](http://blog.steveklabnik.com/posts/2013-06-25-removing-turbolinks-from-rails-4)!
+
+[What are turbolinks?](http://guides.rubyonrails.org/working_with_javascript_in_rails.html#turbolinks) / [Why remove them?](http://engineering.onlive.com/2014/02/14/turbolinks-the-best-thing-you-wont-ever-use-in-rails-4/)
+	
+
+####1) Angularize
+
+
+a) Add AngularJS gem to Gemfile:
+
+	gem 'angular-gem'
+	
+We will be using a gem `angularjs-rails-resource` that is specifically designed to work with Rails resources. Add it to Gemfile
+
+	gem 'angularjs-rails-resource', '~> 1.1.1'
+
+Include gems in asset pipeline. In `app/assets/javascripts/application.js`, add:
+
+	//= require angular
+	//= require angularjs/rails/resource
+
+b) Turn app into an angular app
+
+	<html ng-app>
+
+c) Quick test	
+
+Embedd a random angular expression in a view and verify it works, for example:
+
+	{{ 12.34 | currency }}	
+
+####2) Turn Rails into api server
+
+Generate RESTful players controller
+
+	rails g controller players index show create update destroy
+	
+
+The new controller responds with **json** exclusively.	
+
 ```
 class PlayersController < ApplicationController
   # controller supports json only, it can't render pages
@@ -64,45 +92,151 @@ class PlayersController < ApplicationController
 end
 ```	
 
-add route for resource
+Add players resource routes:
 
 	resources :players
 
-
-test it!
+Test it!
 
 	http://localhost:3000/players.json
 
+####3) Replace server side ERB with client side Angular
 
-4) Replacing server sider rendered erb with client side angular
+a) We go back to plain HTMl:
 
-In raffler.js, create app module
+* Remove `.erb` from `views/players/index.html.erb`
+
+
+b) In raffler.js, create angular app module
 
 	var app = angular.module("Raffler", []);
 	
-change `ng-app` tag
+c) Add application name to `ng-app` tag
+
+	<html ng-app='raffler'>
+
+Note that in the html tag, the app name lowercase. The actual module name is uppercase.
 
 
-use gem 'angularjs-rails-resource', '~> 1.1.1'
+####4) Create a RaffleController
 
 
+```
+var appControllers = angular.module('raffler.controllers', []);
+appControllers.controller('RaffleController', [ 
+	"$scope",
+	function($scope) { 
+	$scope.test = 123;
+}
+```
+Make raffler app depemd on new controller module
 
-Craeta Player factory:
-
-```	
-app.factory("Player", ["$resource", function($resource) {
-    return $resource("/players/:id", { id: "@id"}, {update: { method: "PUT"}});
-  }
+```
+var app = angular.module("raffler", [
+	'raffler.controllers'
 ]);
 ```
 
-Create RafflerController
+**Exercise:** Test controller in view
+
+
+####5) Make raffler app talk to "players api"
+
+In raffler.js, create a resource module. When using `railsResourceFactory`, the code below is the equivalent of declaring `resource: player`, but for Angular.
+
+```	
+var resourceModule = angular.module('raffler.resources', ["rails"]);
+
+resourceModule.factory('Player',
+  function (railsResourceFactory) {
+    var resource = railsResourceFactory({
+      url: '/players',
+      name: 'player'});
+    return resource;
+});
+```
+
+Again, make the raffler app depend on new module:
 
 ```
-app.controller()RaffleCtrl = [
-  "$scope", "Entry", function($scope, Entry) {
-    $scope.entries = Entry.query();
+var app = angular.module("raffler", [
+	'raffler.controllers',
+	'raffler.resources'
+	]);
 ```
+
+Inject the new resource module in the controller:
+
+```
+var appControllers = angular.module('raffler.controllers', []);
+appControllers.controller('RaffleController', [ 
+	"$scope",
+	"Player",
+	function($scope, Player) { 
+	...
+}
+```
+
+Now we can use `Player` resource in the Angular controller like we would use ActiveRecord Models in rails controller. Very cool!
+
+```
+Player.query()
+Player.query({ name: "Cartman"})
+
+var newPlayer = new Player({ name: "Jack"})
+newPlayer.create()
+
+newPlayer.delete()
+
+newPlayer.name = "Eric Cartman"
+newPlayer.update()
+```
+
+So let's use it and get the list of players from the api server. Let's add this to the angular controller.
+
+```
+// get list of all players
+Player.query().then(function(result) {
+    	$scope.players = result;
+  	})
+```  	
+
+Here's the new view:
+
+
+	<h1>Southpark Raffle</h1>
+	<div ng-controller="RaffleController">
+  	<ul>
+    	<li ng-repeat="player in players">
+      	{{player.name}}
+    	</li>
+  	</ul>
+	</div>
+
+
+####6) POSTing from Angular - Adding players
+
+Let's add an input form:
+
+	<form ng-submit="addPlayer()">
+		<input type="text" ng-model="newName">
+		<input type="submit" value="Add">
+	</form>
+	
+And an event handler in the controller:
+
+	$scope.addPlayer = function() {
+		var newPlayer = new Player({
+			name: $scope.newName
+    	})
+		newPlayer.create().then(function(newlyCreatedPlayer){
+			$scope.players.push(newlyCreatedPlayer);
+			$scope.newName = "";
+      });
+    };
+
+	
+
 
   
   
