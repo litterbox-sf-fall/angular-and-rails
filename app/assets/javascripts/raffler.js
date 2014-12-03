@@ -1,11 +1,6 @@
-var app = angular.module("raffler", [
-	'raffler.controllers',
-	'raffler.resources'
-	]);
+var app = angular.module("raffler", ["rails"]);
 
-var resourceModule = angular.module('raffler.resources', ["rails"]);
-
-resourceModule.factory('Player',
+app.factory('Player',
   function (railsResourceFactory) {
     var resource = railsResourceFactory({
       url: '/players',
@@ -13,9 +8,7 @@ resourceModule.factory('Player',
     return resource;
 });
 
-var appControllers = angular.module('raffler.controllers', []);
-
-appControllers.controller('RaffleController', [ 
+app.controller('RaffleController', [ 
 	"$scope",
 	"Player",
 	function($scope, Player) {
