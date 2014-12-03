@@ -122,19 +122,11 @@ Note that in the html tag, the app name lowercase. The actual module name is upp
 
 
 ```
-var appControllers = angular.module('raffler.controllers', []);
-appControllers.controller('RaffleController', [ 
+app.controller('RaffleController', [ 
 	"$scope",
 	function($scope) { 
 	$scope.test = 123;
 }
-```
-Make raffler app depemd on new controller module
-
-```
-var app = angular.module("raffler", [
-	'raffler.controllers'
-]);
 ```
 
 **Exercise:** Test controller in view
@@ -145,9 +137,7 @@ var app = angular.module("raffler", [
 In raffler.js, create a resource module. When using `railsResourceFactory`, the code below is the equivalent of declaring `resource: player`, but for Angular.
 
 ```	
-var resourceModule = angular.module('raffler.resources', ["rails"]);
-
-resourceModule.factory('Player',
+app('Player',
   function (railsResourceFactory) {
     var resource = railsResourceFactory({
       url: '/players',
@@ -156,20 +146,18 @@ resourceModule.factory('Player',
 });
 ```
 
-Again, make the raffler app depend on new module:
+Again, make the raffler app depend on "rails" service:
 
 ```
 var app = angular.module("raffler", [
-	'raffler.controllers',
-	'raffler.resources'
+	'rails'
 	]);
 ```
 
 Inject the new resource module in the controller:
 
 ```
-var appControllers = angular.module('raffler.controllers', []);
-appControllers.controller('RaffleController', [ 
+app.controller('RaffleController', [ 
 	"$scope",
 	"Player",
 	function($scope, Player) { 
